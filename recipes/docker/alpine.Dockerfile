@@ -2,7 +2,7 @@ FROM alpine:3.7
 
 RUN mkdir -p /opt
 
-ADD myDependency.sh /opt/myDependency.sh
+ADD alpine/myDependency.sh /opt/myDependency.sh
 
 RUN apk update
 RUN apk add bash

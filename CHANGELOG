@@ -1,3 +1,10 @@
+version-2.0.0
+02/10/2021
+
+NEW FEATURES
+  - update with geniac version-2.0.0
+  - put source code in modules/fromSource, delete helloWorld.sh not needed anymore with new geniac version
+
 version-1.0.0
 31/05/2021
 

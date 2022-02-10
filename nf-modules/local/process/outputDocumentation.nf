@@ -27,7 +27,6 @@ process outputDocumentation {
 
     input:
     path outputDocs
-    path images
 
     output:
     path "resultsDescription.html"
