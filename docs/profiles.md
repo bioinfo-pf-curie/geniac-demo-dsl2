@@ -8,39 +8,44 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 
 ###  `conda`
 
-Build a new conda environment before running the pipeline. Use the option `--condaCacheDir` to change the default conda cache directory.
+Build a new conda environment before running the pipeline.
+The conda environment will be created in the `$HOME/conda-cache-nextflow` folder by default.  Use the option `--condaCacheDir` to change the default conda cache directory.
 
 ###  `multiconda`
 
-Build a new conda environment for each process before running the pipeline. Use the option `--condaCacheDir` to change the default conda cache directory.
+Build new conda environments for each process before running the pipeline.
+The conda environments will be created in the `$HOME/conda-cache-nextflow` folder by default.  Use the option `--condaCacheDir` to change the default conda cache directory.
 
 ###  `path`
 
-Use a global path for all tools. Use the option `--globalPath` to define the path the use.
+By default, Nextflow expects all the tools to be installed and available in the `PATH` environment variable.
+This path can be set using the `-profile path` combined with the `--globalPath /my/path` option specifying where the tools are installed.
+Assume that the pipeline has been installed in `${HOME}/tmp/myPipeline/install`, geniac creates `${HOME}/tmp/myPipeline/install/path/bin` folder. If you do not defined the `--globalPath` option, the `-profile path` option expect to find the tools in `${HOME}/tmp/myPipeline/install/path/bin` folder.
+
 
 ###  `multipath`
 
-Use the paths defined in configuration for each tool.
-
-First, create a folder tree that looks like this 
+In addition, the `-profile multipath` is available in order to specify the `PATH` for each tool, instead of a global one.
+Assume that the pipeline has been installed in `${HOME}/tmp/myPipeline/install`, geniac creates `${HOME}/tmp/myPipeline/install/multipath` folder whick look like this:
 
 ```
-├── path
-│   ├── alpine
-│   │   └── bin
-│   ├── fastqc
-│   │   └── bin
-│   ├── helloWorld
-│   │   └── bin
-│   ├── rmarkdown
-│   │   └── bin
-│   └── trickySoftware
-│       └── bin
+multipath/
+├── alpine
+│   └── bin
+├── fastqc
+│   └── bin
+├── helloWorld
+│   └── bin
+├── multiqc
+│   └── bin
+├── python
+│   └── bin
+└── trickySoftware
+    └── bin
 ```
 
 The second level in the folder tree is the label that has been given in each Nextflow process. Install each tool in its corresponding `bin` directory.
 
-Then, use the option `--globalPath` to define the path to the `path` folder as shown above in the folder tree.
 
 ###  `docker`
 
@@ -49,6 +54,7 @@ Use the Docker images for each process.
 ###  `singularity`
 
 Use the Singularity images for each process. Use the option `--singularityImagePath` to specify where the images are available.
+Assume that the pipeline has been installed in `${HOME}/tmp/myPipeline/install`, geniac creates `${HOME}/tmp/myPipeline/install/containers/singularity` folder. If you ask geniac to build the singularity images, they will be stored in this folder. If you do not defined the `--singularityImagePath` option, the `-profile singularity` option expects to find the singularity images the `${HOME}/tmp/myPipeline/install/containers/singularity` folder.
 
 ## Define where to launch the computation
 

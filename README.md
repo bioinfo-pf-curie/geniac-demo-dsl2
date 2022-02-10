@@ -1,167 +1,154 @@
-# Nextflow pipeline 
-<!-- TODO update with the name of the pipeline -->
+# Geniac-demo-dsl2 pipeline 
 
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
 [![Install with](https://anaconda.org/anaconda/conda-build/badges/installer/conda.svg)](https://conda.anaconda.org/anaconda)
 [![Singularity Container available](https://img.shields.io/badge/singularity-available-7E4C74.svg)](https://singularity.lbl.gov/)
 [![Docker Container available](https://img.shields.io/badge/docker-available-003399.svg)](https://www.docker.com/)
 
+* [Introduction](#introduction)
+* [Quick start](#quick-start)
+* [Geniac documentation and useful resources](#geniac-documentation-and-useful-resources)
+* [Pipeline documentation](#pipeline-documentation)
+* [Acknowledgements](#acknowledgements)
+* [Release notes](CHANGELOG)
+* [Citation](#citation)
+
 ## Introduction
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow manager to run tasks across multiple compute infrastructures in a very portable manner.
-It supports [conda](https://docs.conda.io) package manager and  [singularity](https://sylabs.io/guides/3.6/user-guide/) / [Docker](https://www.docker.com/) containers making installation easier and results highly reproducible.
+This is a demo pipeline with the best practises for the development of bioinformatics analysis pipelines with [Nextflow](https://www.nextflow.io) DSL2 and [geniac](https://github.com/bioinfo-pf-curie/geniac) (**A**utomatic **C**onfiguration **GEN**erator and **I**nstaller for nextflow pipelines). It runs within ~20 seconds a very simple bioinformatics pipeline inspired from the analysis of high-throuphput-sequencing data. The best practises proposed by [geniac](https://github.com/bioinfo-pf-curie/geniac) can be applied to any analysis workflow in data science.
 
-## Pipeline summary
+This pipeline illustrates how [geniac](https://github.com/bioinfo-pf-curie/geniac) can automatically build:
+* [Nextflow profiles](docs/profiles.md) configuration files
+* [Singularity](https://sylabs.io/) / [Docker](https://www.docker.com/) recipes and containers
+* Run the pipeline with the different [Nextflow profiles](docs/profiles.md)
 
-<!-- TODO 
+## Quick start
 
-Describe here the main steps of the pipeline.
+### Prerequisites
 
-1. Step 1 does...
-2. Step 2 does...
-3. etc
+* git (>= 2.0) [required]
+* cmake (>= 3.0) [required]
+* Nextflow (>= 21.10.6) [required]
+* Singularity (>= 3.8.5) [optional]
+* Docker (>= 18.0) [optional]
 
--->
+Install [conda](https://docs.conda.io):
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+```
 
-### Quick help
+### Install the geniac conda environment
 
 ```bash
-nextflow run main.nf --help
-N E X T F L O W  ~  version 19.10.0
-Launching `main.nf` [stupefied_darwin] - revision: aa905ab621
-=======================================================
-
-Usage:
-
-Mandatory arguments:
---reads [file]                   Path to input data (must be surrounded with quotes)
---samplePlan [file]              Path to sample plan file if '--reads' is not specified
---genome [str]                   Name of the reference genome. See the `--genomeAnnotationPath` to defined the annotation path
--profile [str]                   Configuration profile to use (multiple profiles can be specified with comma separated values)
-
-Inputs:
---design [file]                  Path to design file for extended analysis
---singleEnd [bool]               Specifies that the input is single-end reads
-
-Skip options: All are false by default
---skipSoftVersion [bool]         Do not report software version
---skipMultiQC [bool]             Skip MultiQC
-
-Other options:
---metadata [dir]                Add metadata file for multiQC report
---outDir [dir]                  The output directory where the results will be saved
--w/--work-dir [dir]             The temporary directory where intermediate data will be saved
--name [str]                      Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
-
-=======================================================
-Available profiles
--profile test                    Run the test dataset
--profile conda                   Build a new conda environment before running the pipeline. Use `--condaCacheDir` to define the conda cache path
--profile multiconda              Build a new conda environment per process before running the pipeline. Use `--condaCacheDir` to define the conda cache path
--profile path                    Use the installation path defined for all tools. Use `--globalPath` to define the installation path
--profile multipath               Use the installation paths defined for each tool. Use `--globalPath` to define the installation path
--profile docker                  Use the Docker images for each process
--profile singularity             Use the Singularity images for each process. Use `--singularityPath` to define the path of the singularity containers
--profile cluster                 Run the workflow on the cluster, instead of locally
-
+# Create the geniac conda environment
+export GENIAC_CONDA="https://raw.githubusercontent.com/bioinfo-pf-curie/geniac/release/environment.yml"
+wget ${GENIAC_CONDA}
+conda env create -f environment.yml
+conda activate geniac
 ```
 
-
-### Quick run
-
-The pipeline can be run on any infrastructure from a list of input files or from a sample plan as follows:
-
-#### Run the pipeline on a test dataset
-
-See the file `conf/test.config` to set your test dataset.
+### Check the code, install and run the pipeline with the multiconda profile
 
 ```bash
-nextflow run main.nf -profile test,conda
+export WORK_DIR="${HOME}/tmp/myPipeline"
+export INSTALL_DIR="${WORK_DIR}/install"
+export GIT_URL="https://github.com/bioinfo-pf-curie/geniac-demo-dsl2.git"
 
+# Initialization of a working directory
+# with the src and build folders
+geniac init -w ${WORK_DIR} ${GIT_URL}
+cd ${WORK_DIR}
+
+# Check the code
+geniac lint
+
+# Install the pipeline
+geniac install . ${INSTALL_DIR}
+
+# Test the pipeline with the multiconda profile
+geniac test multiconda
 ```
 
-#### Run the pipeline from a `sample plan` and a `design` file
+### Check the code, install and run the pipeline with the singularity profile
+
+Note that you need `sudo` privilege to build the singularity images.
 
 ```bash
-nextflow run main.nf --samplePlan mySamplePlan.csv --design myDesign.csv --genome 'hg19' --genomeAnnotationPath /my/annotation/path --outDir /my/output/dir
+export WORK_DIR="${HOME}/tmp/myPipeline"
+export INSTALL_DIR="${WORK_DIR}/install"
+export GIT_URL="https://github.com/bioinfo-pf-curie/geniac-demo-dsl2.git"
 
+# Initialization of a working directory
+# with the src and build folders
+geniac init -w ${WORK_DIR} ${GIT_URL}
+cd ${WORK_DIR}
+
+# Install the pipeline with the singularity images
+geniac install . ${INSTALL_DIR} -m singularity
+sudo chown -R  $(id -gn):$(id -gn) build
+
+# Test the pipeline with the singularity profile
+geniac test singularity
+
+# Test the pipeline with the singularity and cluster profiles
+geniac test singularity --check-cluster
 ```
 
-### Defining the '-profile'
+### Advanced users
 
-By default (whithout any profile), Nextflow excutes the pipeline locally, expecting that all tools are available from your `PATH` environment variable.
-
-In addition, several Nextflow profiles are available that allow:
-* the use of [conda](https://docs.conda.io) or containers instead of a local installation,
-* the submission of the pipeline on a cluster instead of on a local architecture.
-
-The description of each profile is available on the help message (see above).
-
-Here are a few examples to set the profile options:
-
-#### Run the pipeline locally, using a global environment where all tools are installed (build by conda for instance)
-```bash
--profile path --globalPath /my/path/to/bioinformatics/tools
-```
-
-#### Run the pipeline on the cluster, using the Singularity containers
-```bash
--profile cluster,singularity --singularityPath /my/path/to/singularity/containers
-```
-
-#### Run the pipeline on the cluster, building a new conda environment
-```bash
--profile cluster,conda --condaCacheDir /my/path/to/condaCacheDir
-
-```
-
-For details about the different profiles available, see [Profiles](docs/profiles.md).
-
-### Sample plan
-
-A sample plan is a csv file (comma separated) that lists all the samples with a biological IDs.
-The sample plan is expected to contain the following fields (with no header):
-
-```
-SAMPLE_ID,SAMPLE_NAME,path/to/R1/fastq/file,path/to/R2/fastq/file (for paired-end only)
-```
-
-### Design control
-
-A design file is a csv file that provides additional details on the samples and how they should be processed.
-Here is a simple example:
-
-```
-SAMPLEID,CONTROLID,GROUP
-A949C08,A949C02,1
-...
-```
-
-<!-- TODO - update the design -->
-
-### Genome annotations
-
-The pipeline does not provide any genomic annotations but expects them to be already available on your system. The path to the genomic annotations can be set with the `--genomeAnnotationPath` option as follows:
+Note that the geniac command line interface provides a wrapper to `git`, `cmake` and `make` commands. Advanced users familiar with these commands can run the following (see [geniac documentation](https://geniac.readthedocs.io) for more details):
 
 ```bash
-nextflow run main.nf --samplePlan mySamplePlan.csv --design myDesign.csv --genome 'hg19' --genomeAnnotationPath /my/annotation/path --outDir /my/output/dir
+export WORK_DIR="${HOME}/tmp/myPipeline"
+export SRC_DIR="${WORK_DIR}/src"
+export INSTALL_DIR="${WORK_DIR}/install"
+export BUILD_DIR="${WORK_DIR}/build"
+export GIT_URL="https://github.com/bioinfo-pf-curie/geniac-demo.git"
 
+mkdir -p ${INSTALL_DIR} ${BUILD_DIR}
+
+# clone the repository
+# the option --recursive is needed if you use geniac as a submodule
+git clone --recursive ${GIT_URL} ${SRC_DIR}
+
+cd ${BUILD_DIR}
+
+# configure the pipeline
+cmake ${SRC_DIR}/geniac -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+
+# build the files needed by the pipeline
+make
+
+# install the pipeline
+make install
+
+# run the pipeline
+make test_multiconda
 ```
 
-For more details see  [Reference genomes](docs/referenceGenomes.md).
+## Pipeline documentation
 
-## Full Documentation
+The geniac-demo pipeline is a very simple bioinformatics pipeline inspired from the analysis of high-throuphput-sequencing data. More information are available here:
 
-1. [Installation](docs/installation.md)
-2. [Reference genomes](docs/referenceGenomes.md)
-3. [Running the pipeline](docs/usage.md)
-4. [Output and how to interpret the results](docs/output.md)
-5. [Troubleshooting](docs/troubleshooting.md)
+1. [Running the pipeline](docs/usage.md)
+2. [Nextflow profiles](docs/profiles.md)
+3. [Outputs](docs/output.md)
 
-## Credits
+## Geniac documentation and useful resources
 
-This pipeline has been written by <!-- TODO -->
+* The [geniac documentation](https://geniac.readthedocs.io) provides a set of best practises to implement *Nextflow* pipelines.
+* The [geniac](https://github.com/bioinfo-pf-curie/geniac) source code provides the set of utilities.
+* The [geniac demo](https://github.com/bioinfo-pf-curie/geniac-demo) provides a toy pipeline to test and practise *Geniac*.
+* The [geniac demo DSL2](https://github.com/bioinfo-pf-curie/geniac-demo-dsl2) provides a toy pipeline to test and practise *Geniac*.
+* The [geniac template](https://github.com/bioinfo-pf-curie/geniac-template) provides a pipeline template to start a new pipeline.
 
-## Contacts
+## Acknowledgements
 
-For any question, bug or suggestion, please use the issue system or contact the bioinformatics core facility.
+* [Institut Curie](https://www.curie.fr)
+* [Centre national de la recherche scientifique](http://www.cnrs.fr)
+* This project has received funding from the European Union’s Horizon 2020 research and innovation programme and the Canadian Institutes of Health Research under the grant agreement No 825835 in the framework on the [European-Canadian Cancer Network](https://eucancan.com/).
+
+## Citation
+
+[Allain F, Roméjon J, La Rosa P et al. Geniac: Automatic Configuration GENerator and Installer for nextflow pipelines. Open Research Europe 2021, 1:76](https://open-research-europe.ec.europa.eu/articles/1-76).

@@ -5,7 +5,7 @@ From: alpine:3.7
     mkdir -p ${SINGULARITY_ROOTFS}/opt
 
 %files
-    myDependency.sh /opt/myDependency.sh
+    alpine/myDependency.sh /opt/myDependency.sh
 
 %post
     apk update

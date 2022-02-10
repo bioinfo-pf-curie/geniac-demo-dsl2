@@ -34,7 +34,7 @@ process alpine {
 
   script:
   """
-  source ${baseDir}/env/alpine.env
+  source ${projectDir}/env/alpine.env
   echo "Hello from alpine: \$(date). This is very high here: \${PEAK_HEIGHT}!" > alpine_${x}.txt
   """
 }
