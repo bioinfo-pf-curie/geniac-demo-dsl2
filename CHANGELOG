@@ -1,8 +1,14 @@
+version-2.2.0
+04/27/2022
+
+NEW FEATURES
+  - update with geniac version-2.2.0
+
 version-2.1.0
 03/25/2022
 
 NEW FEATURES
-  - update with geniac version-2.0.1
+  - update with geniac version-2.1.0
   - new option: params.containers.specificBinds
 
 version-2.0.1
