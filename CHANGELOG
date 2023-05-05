@@ -1,4 +1,8 @@
+version-3.0.0
+05/05/2023
+
 NEW FEATURES
+  - update with geniac version-3.0.0
   - specificBinds option removed and singularityRunOptions set as empty by default
 
 version-2.6.3
